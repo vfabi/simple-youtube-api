@@ -73,7 +73,7 @@ test_reqs = [
 ]
 
 doc_reqs = [
-    "sphinx_rtd_theme>=0.1.10b0S",
+    "sphinx_rtd_theme>=0.1.1",
     "Sphinx>=1.5.2",
     "sphinx-autodoc-typehints>=1.10.3"
 ]

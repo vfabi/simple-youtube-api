@@ -7,6 +7,7 @@ from simple_youtube_api.decorators import (
 
 from simple_youtube_api.video import Video
 from simple_youtube_api.comment_thread import CommentThread, CommentThreadSchema
+from simple_youtube_api.youtube_constants import YOUTUBE_VIDEO_DEFAULT_CATEGORY, YOUTUBE_VIDEO_DEFAULT_LANGUAGE
 
 
 # TODO add more functions
@@ -99,7 +100,7 @@ class YouTubeVideo(Video):
         #            parts_list.append(part_tupple[1])
 
         part = ", ".join(parts_list)
-        print(part)
+        # print(part)
 
         search_response = (
             self.youtube.videos().list(part=part, id=self.id).execute()
@@ -111,17 +112,22 @@ class YouTubeVideo(Video):
 
     # TODO Finish
     @require_channel_auth
-    def update(self, title=None):
+    @require_channel_auth
+    def update(self, video_metadata=None):
         """ Updates a part of video
         """
         body = {
             "id": self.id,
-            "snippet": {"title": "", "categoryId": 1},
+            "snippet": {"title": "", "categoryId": 22},
         }
 
-        if title is not None:
-            body["snippet"]["title"] = title
-        print(body)
+        if video_metadata is not None:
+            body["snippet"]["title"] = video_metadata.get('title', 'Unknown title')
+            body["snippet"]["description"] = video_metadata.get('description', 'Unknown description')
+            body["snippet"]["category"] = video_metadata.get('categoryId', YOUTUBE_VIDEO_DEFAULT_CATEGORY)
+            body["snippet"]["default_language"] = video_metadata.get('default_language', YOUTUBE_VIDEO_DEFAULT_LANGUAGE)
+            body["snippet"]["tags"] = video_metadata.get('tags', [])
+        # print(body)
         response = (
             self.channel.get_login()
             .videos()
@@ -129,7 +135,7 @@ class YouTubeVideo(Video):
             .execute()
         )
 
-        print(response)
+        return response
 
     @require_channel_auth
     def rate_video(self, rating: str):

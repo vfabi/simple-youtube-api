@@ -256,7 +256,7 @@ def generate_upload_body(video):
 def calculate_chunk_size(video_path):
     """ Calculates the chuncsize for video """
     video_size = os.path.getsize(video_path)
-    print("Video size: " + str(video_size) + " bytes")
+    # print("Video size: " + str(video_size) + " bytes")
 
     if video_size > 1000000:
         chunk_size = 1000000
@@ -279,7 +279,7 @@ def initialize_upload(channel, video):
         ),
     )
 
-    return resumable_upload(insert_request)
+    return resumable_upload_basic(insert_request)
 
 
 # This method implements an exponential backoff strategy to resume a
@@ -337,5 +337,43 @@ def resumable_upload(request):
             max_sleep = 2 ** retry
             sleep_seconds = random.random() * max_sleep
             print("Sleeping %f seconds and then retrying..." % sleep_seconds)
+            time.sleep(sleep_seconds)
+    return youtube_video
+
+
+def resumable_upload_basic(request):
+    """ Basic resumable_upload method implemenetation from Youtube API examples repo. """
+
+    youtube_video = None
+    response = None
+    error = None
+    retry = 0
+
+    while response is None:
+        try:
+            # print('Start uploading video ...')
+            status, response = request.next_chunk()
+            if response is not None:
+                # print(f'Uploading method response: {response}')
+                if "id" in response:
+                    # print('Video upload successfull.')
+                    youtube_video = YouTubeVideo(response["id"])
+                else:
+                    raise Exception(f'Video upload process failed unexpectedly. There is no video id in response. Response from API: {response}')
+        except HttpError as e:
+            if e.resp.status in RETRIABLE_STATUS_CODES:
+                error = f'Video upload failed. A retriable HTTP error {e.resp.status} occurred: {e.content}'
+            else:
+                raise
+        except RETRIABLE_EXCEPTIONS as e:
+            error = f'Video upload failed. A retriable error occurred: {e}'
+
+        if error is not None:
+            retry += 1
+            if retry > MAX_RETRIES:
+                return youtube_video
+            max_sleep = 2 ** retry
+            sleep_seconds = random.random() * max_sleep
+            # print(f'Video upload sleeping for {sleep_seconds} seconds and then retrying...')
             time.sleep(sleep_seconds)
     return youtube_video

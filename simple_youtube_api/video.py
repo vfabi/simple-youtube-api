@@ -166,5 +166,5 @@ class Video():
             raise Exception("Not a valid publish time: " + str(time))
 
     def __str__(self):
-        form = "Title: {0}\nDescription: {1}\n Tags:{2}"
+        form = "Title: {0}\nDescription: {1}\nTags:{2}"
         return form.format(self.title, self.description, self.tags)
