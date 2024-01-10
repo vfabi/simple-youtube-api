@@ -68,6 +68,7 @@ class Channel():
         storage_path: str,
         scope=youtube_constants.SCOPES,
         auth_local_webserver=True,
+        exit_if_token_invalid=False
     ):
         """Logs into the channel with credentials
 
@@ -88,6 +89,8 @@ class Channel():
         credentials = storage.get()
 
         if credentials is None or credentials.invalid:
+            if credentials.invalid and exit_if_token_invalid:
+                raise Exception('Google API credentials token expired.')
             saved_argv = []
             if auth_local_webserver is False:
                 saved_argv = sys.argv
