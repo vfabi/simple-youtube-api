@@ -89,8 +89,9 @@ class Channel():
         credentials = storage.get()
 
         if credentials is None or credentials.invalid:
-            if credentials.invalid and exit_if_token_invalid:
-                raise Exception('Google API credentials token expired.')
+            if credentials:
+                if credentials.invalid and exit_if_token_invalid:
+                    raise Exception('Google API credentials token expired.')
             saved_argv = []
             if auth_local_webserver is False:
                 saved_argv = sys.argv
